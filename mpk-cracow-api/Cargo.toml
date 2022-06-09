@@ -1,0 +1,9 @@
+[package]
+name = "mpk-cracow-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.11", features = [ "gzip", "deflate", "json", "serde_json" ] }
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }

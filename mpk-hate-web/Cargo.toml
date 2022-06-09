@@ -1,0 +1,11 @@
+[package]
+name = "mpk-hate-web"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = "0.5"
+sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "postgres" ] }
+tokio = { version = "1.18", features = ["full"] }

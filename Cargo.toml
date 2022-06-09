@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "mpk-cracow-api",
+    "mpk-hate-cron",
+    "mpk-hate-web"
+]
