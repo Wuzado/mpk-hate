@@ -106,6 +106,16 @@ pub enum StopInfoStatus {
     Stopping,
 }
 
+impl fmt::Display for StopInfoStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            StopInfoStatus::Predicted => write!(f, "PREDICTED"),
+            StopInfoStatus::Departed => write!(f, "DEPARTED"),
+            StopInfoStatus::Stopping => write!(f, "STOPPING"),
+        }
+    }
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StopInfoTrips {
