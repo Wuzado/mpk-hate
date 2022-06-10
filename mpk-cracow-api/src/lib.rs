@@ -159,7 +159,7 @@ pub struct StopInfo {
     pub old: Vec<StopInfoTrips>,
     pub routes: Vec<StopInfoRoutes>,
     pub stop_name: String,
-    pub stop_short_name: u32, // short unsigned int (u16-ish?) sent as a JSON string
+    pub stop_short_name: String, // short unsigned int (u16-ish?) sent as a JSON string
 }
 
 async fn stop_info(api_url: &str, stop: u32, mode: Mode) -> reqwest::Result<StopInfo> {
