@@ -22,13 +22,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let all_trips = tram_stop_info(57019, Departure).await?.actual;
 
     for trip in all_trips {
-        let actual_time: Option<NaiveTime>;
-
-        if let Some(i) = trip.actual_time {
-            actual_time = Some(NaiveTime::parse_from_str(i.as_str(), "%H:%M")?);
+        let actual_time: Option<NaiveTime> = if let Some(i) = trip.actual_time {
+            Some(NaiveTime::parse_from_str(i.as_str(), "%H:%M")?)
         } else {
-            actual_time = None;
-        }
+            None
+        };
 
         let planned_time = NaiveTime::parse_from_str(trip.planned_time.as_str(), "%H:%M")?;
 
