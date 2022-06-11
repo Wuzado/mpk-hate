@@ -31,19 +31,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let planned_time = NaiveTime::parse_from_str(trip.planned_time.as_str(), "%H:%M")?;
 
         sqlx::query!(
-                "INSERT INTO trips VALUES ($1, NOW(), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
-                trip.trip_id,
-                trip.actual_relative_time,
-                actual_time,
-                trip.direction,
-                trip.mixed_time,
-                trip.passageid,
-                trip.pattern_text,
-                planned_time,
-                trip.route_id,
-                trip.status.to_string(),
-                trip.vehicle_id,
-            ).execute(&pool).await?;
+            "INSERT INTO trips VALUES ($1, NOW(), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
+            trip.trip_id,
+            trip.actual_relative_time,
+            actual_time,
+            trip.direction,
+            trip.mixed_time,
+            trip.passageid,
+            trip.pattern_text,
+            planned_time,
+            trip.route_id,
+            trip.status.to_string(),
+            trip.vehicle_id,
+        )
+        .execute(&pool)
+        .await?;
     }
 
     Ok(())
