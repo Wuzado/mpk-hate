@@ -1,5 +1,5 @@
 CREATE TABLE trips (
-    trip_id varchar(20) CONSTRAINT firstkey PRIMARY KEY,
+    trip_id varchar(20) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     actual_relative_time integer NOT NULL,
     actual_time time,
@@ -10,5 +10,6 @@ CREATE TABLE trips (
     planned_time time NOT NULL,
     route_id varchar(20) NOT NULL,
     status varchar(10) NOT NULL,
-    vehicle_id varchar(25) NOT NULL
+    vehicle_id varchar(25),
+    unique_id serial CONSTRAINT firstkey PRIMARY KEY
 );
