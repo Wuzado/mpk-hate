@@ -1,11 +1,20 @@
 use chrono::NaiveTime;
-use mpk_cracow_api::tram_stop_info;
-use mpk_cracow_api::Mode::Departure;
+use futures::{stream, StreamExt};
+use itertools::Itertools;
+use mpk_cracow_api::Mode::{Arrival, Departure};
+use mpk_cracow_api::{fetch_all_tram_stops, tram_stop_info, StopInfoTrips};
 use sqlx::postgres::PgPoolOptions;
+use sqlx::{Pool, Postgres};
 use std::time::Duration;
+//use tracing::{error, info};
+use log::{error, info};
+
+const CONCURRENT_REQUESTS: usize = 10;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    env_logger::init();
+
     let db_connection_str = std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "postgres://mpkhate:password@localhost/mpkhate".to_string());
 
@@ -19,8 +28,49 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Run (embedded) migrations if they're not applied already.
     sqlx::migrate!().run(&pool).await?;
 
-    let all_trips = tram_stop_info(57019, Departure).await?.actual;
+    info!("Fetching all tram stops.");
+    let all_stops = fetch_all_tram_stops()
+        .await?
+        .into_iter()
+        .map(|x| x.short_name)
+        .collect_vec(); // better type hints in IntelliJ Rust than .collect()
+    info!("Finished fetching all tram stops.");
 
+    info!("Starting to fetch data about specific stops.");
+    let all_trips = stream::iter(all_stops)
+        .map(|tram_stop_id| async move {
+            info!("Fetching data for stop {}", &tram_stop_id);
+            let stop_info = tram_stop_info(tram_stop_id.as_str(), Departure).await;
+            info!("Finished fetching data for stop {}", &tram_stop_id);
+
+            stop_info
+        })
+        .buffer_unordered(CONCURRENT_REQUESTS);
+
+    all_trips
+        .for_each(|trips| async {
+            match trips {
+                Ok(trips) => if !trips.actual.is_empty() {
+                    match process_data_from_trips(trips.actual, &pool).await {
+                        Ok(_) => info!("Processing data for stop {} succeeded!", trips.stop_short_name),
+                        Err(e) => error!("DB error: {}", e),
+                    }
+                } else {
+                    info!("No future trips fetched.")
+                },
+                Err(e) => error!("Request error: {}", e),
+            }
+        })
+        .await;
+
+    info!("Finished the execution, closing!");
+    Ok(())
+}
+
+async fn process_data_from_trips(
+    all_trips: Vec<StopInfoTrips>,
+    pool: &Pool<Postgres>,
+) -> Result<(), Box<dyn std::error::Error>> {
     for trip in all_trips {
         let actual_time = if let Some(i) = trip.actual_time {
             Some(NaiveTime::parse_from_str(i.as_str(), "%H:%M")?)
@@ -44,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             trip.status.to_string(),
             trip.vehicle_id,
         )
-        .execute(&pool)
+        .execute(pool)
         .await?;
     }
 
