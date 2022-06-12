@@ -57,7 +57,7 @@ pub struct Stop {
     pub longitude: u32, // you need to divide the coordinates by 3 600 000 to get a proper coordinate
     pub name: String,
     #[serde(rename = "shortName")]
-    pub short_name: u32, // short unsigned int (u16-ish?) sent as a JSON string
+    pub short_name: String, // short unsigned int (u16-ish?) sent as a JSON string
 }
 
 #[derive(Deserialize)]
@@ -101,6 +101,7 @@ impl fmt::Display for Mode {
 #[derive(Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum StopInfoStatus {
+    Planned,
     Predicted,
     Departed,
     Stopping,
@@ -109,6 +110,7 @@ pub enum StopInfoStatus {
 impl fmt::Display for StopInfoStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            StopInfoStatus::Planned => write!(f, "PLANNED"),
             StopInfoStatus::Predicted => write!(f, "PREDICTED"),
             StopInfoStatus::Departed => write!(f, "DEPARTED"),
             StopInfoStatus::Stopping => write!(f, "STOPPING"),
@@ -133,7 +135,7 @@ pub struct StopInfoTrips {
     pub route_id: String, // Internal route ID. Unique for each route. Direction does not matter.
     pub status: StopInfoStatus,
     pub trip_id: String,    // Seems to be an unique ID for each trip.
-    pub vehicle_id: String, // Negative number (~i64?)
+    pub vehicle_id: Option<String>, // Negative number (~i64?)
 }
 
 #[derive(Deserialize)]
@@ -162,9 +164,9 @@ pub struct StopInfo {
     pub stop_short_name: String, // short unsigned int (u16-ish?) sent as a JSON string
 }
 
-async fn stop_info(api_url: &str, stop: u32, mode: Mode) -> reqwest::Result<StopInfo> {
+async fn stop_info(api_url: &str, stop: &str, mode: Mode) -> reqwest::Result<StopInfo> {
     reqwest::get(format!(
-        "{}/services/passageInfo/stopPassages/stopPoint?stopPoint={}&mode={}",
+        "{}/services/passageInfo/stopPassages/stop?stop={}&mode={}",
         api_url, stop, mode
     ))
     .await?
@@ -172,10 +174,10 @@ async fn stop_info(api_url: &str, stop: u32, mode: Mode) -> reqwest::Result<Stop
     .await
 }
 
-pub async fn tram_stop_info(stop: u32, mode: Mode) -> reqwest::Result<StopInfo> {
+pub async fn tram_stop_info(stop: &str, mode: Mode) -> reqwest::Result<StopInfo> {
     stop_info(TTSS_TRAM_API_URL, stop, mode).await
 }
 
-pub async fn bus_stop_info(stop: u32, mode: Mode) -> reqwest::Result<StopInfo> {
+pub async fn bus_stop_info(stop: &str, mode: Mode) -> reqwest::Result<StopInfo> {
     stop_info(TTSS_BUS_API_URL, stop, mode).await
 }
