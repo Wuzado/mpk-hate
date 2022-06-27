@@ -1,0 +1,25 @@
+{
+  "db": "PostgreSQL",
+  "0a4a869b41d89934faecda442d7832a5b47c61e40a1aad5bc4b4b21358ce788c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Int4",
+          "Time",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Time",
+          "Varchar",
+          "Varchar",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO trips VALUES ($1, NOW(), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);"
+  }
+}
