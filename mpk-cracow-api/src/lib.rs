@@ -1,3 +1,4 @@
+use arrayvec::ArrayVec;
 use serde::Deserialize;
 use std::fmt;
 
@@ -143,7 +144,7 @@ pub struct StopInfoTrips {
 pub struct StopInfoRoutes {
     //pub alerts: Vec<???>  // empty in testing
     pub authority: String, // Who manages the line. Two primary authorities would probably be MPK and Mobilis, but I'm not certain about it, so I left it as is.
-    pub directions: [String; 2],
+    pub directions: ArrayVec<String, 2>,
     pub id: String,
     pub name: String,       // Line "number".
     pub route_type: String, // tram or bus
