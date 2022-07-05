@@ -11,12 +11,25 @@ use log::{error, info};
 
 const CONCURRENT_REQUESTS: usize = 10;
 
+fn generate_db_url() -> String {
+    if let Ok(x) = std::env::var("DATABASE_URL") {
+        x
+    } else {
+        let user = std::env::var("POSTGRES_USER").unwrap_or_else(|_| "mpkhate".to_string());
+        let password = std::env::var("POSTGRES_PASSWORD").unwrap_or_else(|_| "password".to_string());
+        let ip = std::env::var("POSTGRES_IP").unwrap_or_else(|_| "localhost".to_string());
+        let port = std::env::var("PGPORT").unwrap_or_else(|_| "5432".to_string());
+        let database = std::env::var("POSTGRES_DB").unwrap_or_else(|_| "mpkhate".to_string());
+
+        format!("postgres://{}:{}@{}:{}/{}", user, password, ip, port, database)
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    let db_connection_str = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://mpkhate:password@localhost/mpkhate".to_string());
+    let db_connection_str = generate_db_url();
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
