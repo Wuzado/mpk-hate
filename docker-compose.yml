@@ -1,0 +1,22 @@
+version: "3.8"
+x-common:
+  database:
+    &db-environment
+    POSTGRES_USER: "mpkhate"
+    POSTGRES_PASSWORD: "password"
+    POSTGRES_DB: "mpkhate"
+    PGPORT: 5432
+
+services:
+  db:
+    image: postgres:14-alpine
+    restart: always
+    environment:
+      <<: *db-environment
+    ports:
+      - "5432:5432"
+    volumes:
+      - mpkhate-postgres:/var/lib/postgresql/data
+
+volumes:
+  mpkhate-postgres:
